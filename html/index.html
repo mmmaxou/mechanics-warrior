@@ -1,0 +1,243 @@
+<!doctype html>
+
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+
+  <title>Mechanics Warrior</title>
+  <meta name="description" content="Mechanics Warrior">
+  <meta name="author" content="mmmaxou">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+
+  <!--    <link href="http://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">-->
+  <!--    <link rel="stylesheet" type="text/css" href="../bootstrap/css/bootstrap.min.css">-->
+  <!--Import materialize.css-->
+  <link type="text/css" rel="stylesheet" href="../css/materialize.css" media="screen,projection" />
+  <link rel="stylesheet" type="text/css" href="../lib/toastr.min.css">
+  <link rel="stylesheet" type="text/css" href="../lib/ion.rangeSlider.css">
+  <link rel="stylesheet" type="text/css" href="../lib/ion.rangeSlider.skinFlat.css">
+  <link rel="stylesheet" type="text/css" href="../node_modules/mocha/mocha.css">
+  <!--    <link rel="stylesheet" href="https://code.jquery.com/ui/1.10.4/themes/flick/jquery-ui.css">-->
+  <!--    <link rel="stylesheet" type="text/css" href="../lib/jquery-ui-slider/jquery-ui-slider-pips.css">-->
+  <link rel="stylesheet" type="text/css" href="../font-awesome-4.7.0/css/font-awesome.min.css">
+  <link rel="stylesheet" type="text/css" href="../css/main.css">
+
+</head>
+
+<body>
+  <header>
+    <nav id="top-nav">
+      <div class="container">
+        <div class="nav-wrapper valign-wrapper">
+          <a class="page-title">Mechanics Warrior</a>
+        </div>
+      </div>
+    </nav>
+  </header>
+
+  <main>
+    <div class="section wait-for-DOM" id="app">
+      <div class="row">
+
+
+        <div class="col s12 m3" id="hero">
+          <div class="card">
+            <table class="highlight bordered">
+              <tr>
+                <th>Name</th>
+                <td><span class="badge">{{heroName}}</span></td>
+              </tr>
+              <tr>
+                <td colspan="2">
+                  <span class="onProgressBar center-align">Hp:
+                      <span>{{heroHp}}/{{heroHpMax}}</span>
+                  </span>
+                  <div id="progressBar" class="progressBar"></div>
+                </td>
+              </tr>
+              <tr v-show="heroMana > 0">
+                <td colspan="2">
+                  <span class="onProgressBar center-align">Mana:
+                      <span>{{heroMana}}/{{heroManaMax}}</span>
+                  </span>
+                  <div id="progressBarMana" class="progressBar"></div>
+                </td>
+              </tr>
+              <tr v-if="gold > 0 ">
+                <th>Gold</th>
+                <td><span class="badge">{{gold}}</span></td>
+              </tr>
+              <tr v-if="heroAttackDamage > 1 ">
+                <th>Attack damage</th>
+                <td><span class="badge">{{heroAttackDamage}}</span></td>
+              </tr>
+              <tr v-if="heroDefense > 0">
+                <th>Defense</th>
+                <td><span class="badge">{{heroDefense}}</span></td>
+              </tr>
+              <tr v-if="heroCriticalChance > 0">
+                <th>Critical chance</th>
+                <td><span class="badge">{{heroCriticalChance | percent}}</span></td>
+              </tr>
+              <tr v-if="heroCriticalDamage > 2">
+                <th>Critical damage</th>
+                <td><span class="badge">{{heroCriticalDamage}}x</span></td>
+              </tr>
+              <tr v-if="heroLifeSteal > 0">
+                <th>Life steal</th>
+                <td><span class="badge">{{heroLifeSteal | percent}}</span></td>
+              </tr>
+              <tr v-if="magicHeal > 8">
+                <th>Fireball</th>
+                <td><span class="badge">{{magicHeal}}</span></td>
+              </tr>
+              <tr v-if="magicFireball > 8">
+                <th>Heal</th>
+                <td><span class="badge">{{magicFireball}}</span></td>
+              </tr>
+            </table>
+          </div>
+        </div>
+
+
+
+        <div class="col s12 m9 wait-for-DOM">
+
+          <!-- Nav tabs -->
+          <div class="col s12">
+            <ul class="row tabs tabs-fixed-width z-depth-1" id="mainTab">
+              <li class="tab"><a href="#battle" class="active">Battle</a></li>
+              <li class="tab"><a href="#mechanics">Mechanics</a></li>
+              <li class="tab"><a href="#messages">Messages</a></li>
+              <li class="tab"><a href="#settings">Settings</a></li>
+            </ul>
+          </div>
+
+
+          <!-- Tab panes -->
+          <div class="col s12" id="battle">
+            <div id="barCooldown"></div>
+            <h4>Battle</h4>
+            <div v-if="ennemyAlive" class="card">
+              <div class="m6 card-content">
+                <table class="highlight bordered">
+                  <tr>
+                    <th>Ennemy</th>
+                    <td>{{ennemyName}}</td>
+                  </tr>
+                  <tr>
+                    <th>Hp</th>
+                    <td>{{ennemyHp}}</td>
+                  </tr>
+                  <tr>
+                    <th>Capacities</th>
+                    <td>{{ennemyCapacities}}</td>
+                  </tr>
+                </table>
+
+                <div id="alternateGameplay">
+
+                  <transition name="bounce" mode="out-in">
+                    <div class="card-panel teal lighten-3" v-show="typeFightingEnabled">
+                      <label for="typeFightingInput" class="white-text">Write the words given</label>
+                      <p contenteditable="true" id="typeFightingInput" class="white round"></p>
+                      <p class="help-text white-text">Each error greatly reduce damage dealt. You can even buff your ennemy.</p>
+                    </div>
+                  </transition>
+
+                </div>
+
+              </div>
+
+              <div class="card-action">
+                <button type="button" class="btn red buttonProgress waves-effect waves-light" v-on:click="attack">
+                    <span id="btnAttack">Attack</span>
+                  </button>
+                <button type="button" class="btn red waves-effect waves-light" @click="fireBall" v-if="fireBallActive">Fireball</button>
+                <button type="button" class="btn red waves-effect waves-light" @click="heal" v-if="healActive">Heal</button>
+                <button type="button" class="btn red waves-effect waves-light" @click="typeFighting" v-if="typeFightingActive">Toggle word fighting</button>
+              </div>
+            </div>
+          </div>
+          <div class="col s12" id="mechanics">
+            <h4 class="title-range">
+              Mechanics
+              <input type="text" id="range" name="multiple" value="" />
+              <span class="badge truncate">Buy multiple</span>
+            </h4>
+            <div class="toolbar">
+              <button class="btn btn-large btn-fa-stack" id="reduceAll">
+                all
+                <a class="black-text fa-stack right">
+                  <i class="fa fa-square fa-stack-2x"></i>
+                  <i class="fa fa-compress fa-stack-1x fa-inverse"></i>
+                </a>
+               </button>
+            </div>
+            <!--              <div class="slider"></div>-->
+            <div class="row small-row">
+              <transition-group name="mechanic" tag="div">
+                <mechanic v-for="item in mechanicsBought" :key="item" :title="item" :initial-type="'bought'" class="mechanic-item" :caption="''"></mechanic>
+                <mechanic v-for="item in mechanicsAvailable" :key="item" :title="item" :initial-type="'available'" class="mechanic-item" :caption="'new'"></mechanic>
+              </transition-group>
+            </div>
+          </div>
+          <div class="col s12" id="messages">...</div>
+          <div class="col s12" id="settings">...</div>
+
+        </div>
+      </div>
+    </div>
+
+
+    </div>
+  </main>
+  <footer>
+
+    <div id="mocha"></div>
+    <table id="results" class="highlight bordered">
+      <tbody>
+
+      </tbody>
+    </table>
+
+  </footer>
+
+  <!--Scripts-->
+  <script src="../node_modules/mocha/mocha.js" type="text/javascript"></script>
+  <script src="../node_modules/chai/chai.js" type="text/javascript"></script>
+
+  <script>
+    mocha.setup('bdd');
+  </script>
+
+  <!--Import jQuery before materialize.js-->
+  <script src="../js/jquery-2.2.4.min.js" type="text/javascript"></script>
+  <script src="../lib/progressbar.min.js" type="text/javascript"></script>
+  <script src="../lib/toastr.min.js" type="text/javascript"></script>
+  <script src="../lib/ion.rangeSlider.js" type="text/javascript"></script>
+  <script src="../js/materialize.min.js" type="text/javascript"></script>
+  <script src="../js/genetic-0.1.14.js" type="text/javascript"></script>
+
+  <script src="../js/ennemies.js" type="text/javascript"></script>
+  <script src="../js/helpers.js" type="text/javascript"></script>
+  <script src="../js/wordList.js" type="text/javascript"></script>
+  <script src="../js/vue.js" type="text/javascript"></script>
+  <script src="../js/AI.js" type="text/javascript"></script>
+  <script src="../js/main.js" type="text/javascript"></script>
+  <script src="../js/vueLogic.js" type="text/javascript"></script>
+  <script src="../js/geneticLogic.js" type="text/javascript"></script>
+
+  <script src="../test/ennemyTest.js" type="text/javascript"></script>
+
+  <script>
+//    mocha.run();
+
+  </script>
+
+
+</body>
+
+</html>
